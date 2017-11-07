@@ -1,0 +1,4 @@
+training
+*.pyc
+svc.dat
+.idea
