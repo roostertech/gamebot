@@ -9,12 +9,13 @@ from PIL import Image
 # import Pillow
 
 class Recognizer:
-    def __init__(self, name):
+    def __init__(self, name, downscale=True, downscale_res=(32,32)):
         self.training_data = []
         self.target_values = []
         self.svc = svm.SVC(gamma=0.001, kernel='linear', C=100)
-        self.downscale_res = (32, 32)
+        self.downscale_res = downscale_res
         self.name = name
+        self.downscale = downscale
 
     def load(self, path, target_value, verbose=False):
         training_imgs = os.listdir(path)
@@ -22,7 +23,8 @@ class Recognizer:
             if verbose:
                 print "%s -> %d" % (f, target_value)
             img = Image.open(path + '/' + f)
-            img = img.resize(self.downscale_res, Image.BILINEAR)
+            if self.downscale:
+                img = img.resize(self.downscale_res, Image.BILINEAR)
             self.training_data.append(np.array(img.getdata()).flatten())
             self.target_values.append(target_value)
 
@@ -44,7 +46,8 @@ class Recognizer:
             joblib.dump(self.svc, 'svc-%s.dat' % self.name, compress=9)
 
     def predict(self, image):
-        resized_img = image.resize(self.downscale_res, Image.BILINEAR)
-        np_img = (np.array(resized_img.getdata()).flatten())
+        if self.downscale:
+            image = image.resize(self.downscale_res, Image.BILINEAR)
+        np_img = (np.array(image.getdata()).flatten())
         np_img = np.array(np_img).reshape(1, -1)
         return int(self.svc.predict(np_img))
