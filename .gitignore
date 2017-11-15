@@ -2,3 +2,5 @@ training
 *.pyc
 svc.dat
 .idea
+*.png
+*.dat
